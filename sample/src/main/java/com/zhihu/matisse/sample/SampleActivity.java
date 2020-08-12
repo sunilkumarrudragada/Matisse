@@ -28,7 +28,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -39,14 +43,20 @@ import com.zhihu.matisse.engine.impl.GlideEngine;
 import com.zhihu.matisse.engine.impl.PicassoEngine;
 import com.zhihu.matisse.filter.Filter;
 import com.zhihu.matisse.internal.entity.CaptureStrategy;
+import com.zhihu.matisse.internal.model.SelectedItemCollection;
+import com.zhihu.matisse.internal.ui.MediaSelectionFragment;
+import com.zhihu.matisse.internal.ui.adapter.AlbumMediaAdapter;
+import com.zhihu.matisse.listener.OnSelectedListener;
+import com.zhihu.matisse.ui.MatisseFragment;
 
 import java.util.List;
 
-public class SampleActivity extends AppCompatActivity implements View.OnClickListener {
+public class SampleActivity extends AppCompatActivity implements View.OnClickListener, MediaSelectionFragment.SelectionProvider, AlbumMediaAdapter.CheckStateListener {
 
     private static final int REQUEST_CODE_CHOOSE = 23;
 
     private UriAdapter mAdapter;
+    Fragment fragment1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +69,20 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(mAdapter = new UriAdapter());
+
+        fragment1 = MatisseFragment.newInstance(5, MatisseFragment.IMAGE_TYPE);
+//
+        loadFragment(fragment1);
+    }
+
+    private void loadFragment(Fragment fragment) {
+        // create a FragmentManager
+        FragmentManager fm = getSupportFragmentManager();
+        // create a FragmentTransaction to begin the transaction and replace the Fragment
+        FragmentTransaction fragmentTransaction = fm.beginTransaction();
+        // replace the FrameLayout with new Fragment
+        fragmentTransaction.replace(R.id.main_content, fragment);
+        fragmentTransaction.commit(); // save the changes
     }
 
     // <editor-fold defaultstate="collapsed" desc="onClick">
@@ -148,6 +172,19 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
             mAdapter.setData(Matisse.obtainResult(data), Matisse.obtainPathResult(data));
             Log.e("OnActivityResult ", String.valueOf(Matisse.obtainOriginalState(data)));
         }
+    }
+
+    @Override
+    public SelectedItemCollection provideSelectedItemCollection() {
+        MatisseFragment fragment = (MatisseFragment) getSupportFragmentManager().findFragmentById(R.id.main_content);
+        return fragment.getmSelectedCollection();
+    }
+
+    @Override
+    public void onUpdate() {
+        MatisseFragment fragment = (MatisseFragment) getSupportFragmentManager().findFragmentById(R.id.main_content);
+        List<Uri> list = fragment.getSelectedList();
+        list.get(0);
     }
 
     private static class UriAdapter extends RecyclerView.Adapter<UriAdapter.UriViewHolder> {
