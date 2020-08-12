@@ -67,6 +67,9 @@ public class MatisseFragment extends Fragment implements
     public static final String IMAGE_TYPE = "IMAGE_TYPE";
     public static final String VIDEO_TYPE = "VIDEO_TYPE";
     public static final String IMAGE_VIDEO = "IMAGE_VIDEO";
+    public static final String NIGHT_THEME = "NIGHT_THEME";
+    public static final String LIGHT_THEME = "LIGHT_THEME";
+    public static final String THEME = "LIGHT_THEME";
 
     public static final String TAG = "MatisseFragment";
     public static final int RESULT_CANCELED    = 0;
@@ -98,11 +101,12 @@ public class MatisseFragment extends Fragment implements
      * @return A new instance of fragment MatisseFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MatisseFragment newInstance(int count, String type) {
+    public static MatisseFragment newInstance(int count, String type, String theme) {
         MatisseFragment fragment = new MatisseFragment();
         Bundle bundle = new Bundle();
         bundle.putInt(IMAGE_COUNT, count);
         bundle.putString(MIME_TYPE, type);
+        bundle.putString(THEME, theme);
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -130,10 +134,13 @@ public class MatisseFragment extends Fragment implements
     public void onCreate(Bundle savedInstanceState) {
         mSelectedCollection = new SelectedItemCollection(getActivity());
         mSpec = SelectionSpec.getCleanInstance();
+        mSpec.themeId = R.style.Night_Theme;
         mSpec.mediaTypeExclusive = false;
         if (getArguments() != null) {
             mSpec.maxSelectable = getArguments().getInt(IMAGE_COUNT);
             String mimType = getArguments().getString(MIME_TYPE);
+            String theme = getArguments().getString(THEME);
+            // select mimType
             if (mimType == IMAGE_TYPE) {
                 mSpec.mimeTypeSet = MimeType.ofImage();
                 mSpec.showSingleMediaType = true;
@@ -142,6 +149,11 @@ public class MatisseFragment extends Fragment implements
                 mSpec.showSingleMediaType = true;
             } else {
                 mSpec.mimeTypeSet = MimeType.ofAll();
+            }
+
+            // theme
+            if (theme == LIGHT_THEME) {
+                mSpec.themeId = R.style.Light_Theme;
             }
         }
         mSpec.orientation = SCREEN_ORIENTATION_UNSPECIFIED;

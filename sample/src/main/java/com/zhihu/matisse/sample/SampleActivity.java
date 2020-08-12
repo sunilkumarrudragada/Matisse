@@ -70,7 +70,7 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(mAdapter = new UriAdapter());
 
-        fragment1 = MatisseFragment.newInstance(5, MatisseFragment.IMAGE_TYPE);
+        fragment1 = MatisseFragment.newInstance(5, MatisseFragment.IMAGE_TYPE, MatisseFragment.LIGHT_THEME);
 //
         loadFragment(fragment1);
     }
