@@ -164,6 +164,7 @@ public class MatisseFragment extends Fragment implements
         mSelectedCollection = new SelectedItemCollection(getActivity());
         mSpec = SelectionSpec.getCleanInstance();
         mSpec.themeId = R.style.Night_Theme;
+        mSpec.showPreview = false;
         mSpec.mediaTypeExclusive = false;
         if (getArguments() != null) {
             mSpec.maxSelectable = getArguments().getInt(IMAGE_COUNT);
@@ -192,7 +193,6 @@ public class MatisseFragment extends Fragment implements
         mSpec.orientation = SCREEN_ORIENTATION_UNSPECIFIED;
         mSpec.countable = false;
         mSpec = SelectionSpec.getInstance();
-        getActivity().setTheme(mSpec.themeId);
         getActivity().setTheme(mSpec.themeId);
         super.onCreate(savedInstanceState);
     }
@@ -248,15 +248,14 @@ public class MatisseFragment extends Fragment implements
         updateBottomToolbar();
 
         mAlbumsAdapter = new AlbumsAdapter(getActivity(), null, false);
-        mAlbumsSpinner = new AlbumsSpinner(getActivity());
-        mAlbumsSpinner.setOnItemSelectedListener(this);
-        mAlbumsSpinner.setSelectedTextView((TextView) view.findViewById(R.id.selected_album));
-        mAlbumsSpinner.setPopupAnchorView(view.findViewById(R.id.toolbar));
-        mAlbumsSpinner.setAdapter(mAlbumsAdapter);
+//        mAlbumsSpinner = new AlbumsSpinner(getActivity());
+//        mAlbumsSpinner.setOnItemSelectedListener(this);
+//        mAlbumsSpinner.setSelectedTextView((TextView) view.findViewById(R.id.selected_album));
+//        mAlbumsSpinner.setPopupAnchorView(view.findViewById(R.id.toolbar));
+//        mAlbumsSpinner.setAdapter(mAlbumsAdapter);
         mAlbumCollection.onCreate(getActivity(), this);
         mAlbumCollection.onRestoreInstanceState(savedInstanceState);
         mAlbumCollection.loadAlbums();
-
         toolbar.setNavigationIcon(null);
 
         // Inflate the layout for this fragment
@@ -410,8 +409,8 @@ public class MatisseFragment extends Fragment implements
             @Override
             public void run() {
                 cursor.moveToPosition(mAlbumCollection.getCurrentSelection());
-                mAlbumsSpinner.setSelection(getActivity(),
-                        mAlbumCollection.getCurrentSelection());
+//                mAlbumsSpinner.setSelection(getActivity(),
+//                        mAlbumCollection.getCurrentSelection());
                 Album album = Album.valueOf(cursor);
                 if (album.isAll() && SelectionSpec.getInstance().capture) {
                     album.addCaptureCount();
@@ -492,5 +491,9 @@ public class MatisseFragment extends Fragment implements
 
     public String capturedImage() {
         return mMediaStoreCompat.getCurrentPhotoPath();
+    }
+
+    public String removedItem() {
+        return mSelectedCollection.removedItemPath;
     }
 }

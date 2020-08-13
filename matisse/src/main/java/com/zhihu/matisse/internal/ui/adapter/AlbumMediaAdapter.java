@@ -36,6 +36,7 @@ import com.zhihu.matisse.internal.entity.IncapableCause;
 import com.zhihu.matisse.internal.model.SelectedItemCollection;
 import com.zhihu.matisse.internal.ui.widget.CheckView;
 import com.zhihu.matisse.internal.ui.widget.MediaGrid;
+import com.zhihu.matisse.internal.utils.PathUtils;
 
 public class AlbumMediaAdapter extends
         RecyclerViewCursorAdapter<RecyclerView.ViewHolder> implements
@@ -50,11 +51,13 @@ public class AlbumMediaAdapter extends
     private OnMediaClickListener mOnMediaClickListener;
     private RecyclerView mRecyclerView;
     private int mImageResize;
+    private Context context;
 
     public AlbumMediaAdapter(Context context, SelectedItemCollection selectedCollection, RecyclerView recyclerView) {
         super(null);
         mSelectionSpec = SelectionSpec.getInstance();
         mSelectedCollection = selectedCollection;
+        this.context = context;
 
         TypedArray ta = context.getTheme().obtainStyledAttributes(new int[]{R.attr.item_placeholder});
         mPlaceholder = ta.getDrawable(0);
@@ -189,6 +192,7 @@ public class AlbumMediaAdapter extends
         } else {
             if (mSelectedCollection.isSelected(item)) {
                 mSelectedCollection.remove(item);
+                mSelectedCollection.removedItemPath = PathUtils.getPath(context, item.getContentUri());
                 notifyCheckStateChanged();
             } else {
                 if (assertAddSelection(holder.itemView.getContext(), item)) {

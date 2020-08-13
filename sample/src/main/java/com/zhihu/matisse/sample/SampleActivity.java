@@ -110,6 +110,7 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
                         .choose(MimeType.ofImage(), false)
                         .countable(true)
                         .capture(true)
+                        .showPreview(false)
                         .captureStrategy(
                                 new CaptureStrategy(true, "com.zhihu.matisse.sample.fileprovider", "test"))
                         .maxSelectable(9)
@@ -135,6 +136,7 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
                 Matisse.from(SampleActivity.this)
                         .choose(MimeType.ofImage())
                         .theme(R.style.Matisse_Dracula)
+                        .showPreview(false)
                         .countable(false)
                         .addFilter(new GifSizeFilter(320, 320, 5 * Filter.K * Filter.K))
                         .maxSelectable(9)
@@ -148,6 +150,7 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
                         .choose(MimeType.of(MimeType.GIF), false)
                         .countable(true)
                         .maxSelectable(9)
+                        .showPreview(false)
                         .addFilter(new GifSizeFilter(320, 320, 5 * Filter.K * Filter.K))
                         .gridExpectedSize(
                                 getResources().getDimensionPixelSize(R.dimen.grid_expected_size))

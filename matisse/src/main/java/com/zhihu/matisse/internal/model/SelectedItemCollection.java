@@ -57,6 +57,7 @@ public class SelectedItemCollection {
     public static final int COLLECTION_MIXED = COLLECTION_IMAGE | COLLECTION_VIDEO;
     private final Context mContext;
     private Set<Item> mItems;
+    public String removedItemPath;
     private int mCollectionType = COLLECTION_UNDEFINED;
 
     public SelectedItemCollection(Context context) {
