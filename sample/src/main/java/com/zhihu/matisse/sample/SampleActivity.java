@@ -49,9 +49,10 @@ import com.zhihu.matisse.internal.ui.adapter.AlbumMediaAdapter;
 import com.zhihu.matisse.listener.OnSelectedListener;
 import com.zhihu.matisse.ui.MatisseFragment;
 
+import java.util.HashMap;
 import java.util.List;
 
-public class SampleActivity extends AppCompatActivity implements View.OnClickListener, MediaSelectionFragment.SelectionProvider, AlbumMediaAdapter.CheckStateListener {
+public class SampleActivity extends AppCompatActivity implements View.OnClickListener, MediaSelectionFragment.SelectionProvider, AlbumMediaAdapter.CheckStateListener,  AlbumMediaAdapter.OnPhotoCapture {
 
     private static final int REQUEST_CODE_CHOOSE = 23;
 
@@ -65,12 +66,13 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
         findViewById(R.id.zhihu).setOnClickListener(this);
         findViewById(R.id.dracula).setOnClickListener(this);
         findViewById(R.id.only_gif).setOnClickListener(this);
+        findViewById(R.id.remove).setOnClickListener(this);
 
         RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerview);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(mAdapter = new UriAdapter());
 
-        fragment1 = MatisseFragment.newInstance(5, MatisseFragment.IMAGE_TYPE, MatisseFragment.LIGHT_THEME);
+        fragment1 = MatisseFragment.newInstance(5, 5, MatisseFragment.IMAGE_TYPE, MatisseFragment.LIGHT_THEME, true, true, "com.zhihu.matisse.sample.fileprovider", "test");
 //
         loadFragment(fragment1);
     }
@@ -101,7 +103,6 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
                 }, Throwable::printStackTrace);
     }
     // </editor-fold>
-
     private void startAction(View v) {
         switch (v.getId()) {
             case R.id.zhihu:
@@ -159,6 +160,10 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
                         .autoHideToolbarOnSingleTap(true)
                         .forResult(REQUEST_CODE_CHOOSE);
                 break;
+            case R.id.remove:
+                MatisseFragment fragment = (MatisseFragment) getSupportFragmentManager().findFragmentById(R.id.main_content);
+                fragment.unSelectItem(fragment.getSelectedPaths().get(1));
+                break;
             default:
                 break;
         }
@@ -168,9 +173,14 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        MatisseFragment fragment = (MatisseFragment) getSupportFragmentManager().findFragmentById(R.id.main_content);
+
+        List<Uri> list = fragment.getSelectedList();
         if (requestCode == REQUEST_CODE_CHOOSE && resultCode == RESULT_OK) {
             mAdapter.setData(Matisse.obtainResult(data), Matisse.obtainPathResult(data));
             Log.e("OnActivityResult ", String.valueOf(Matisse.obtainOriginalState(data)));
+        } else if (requestCode == MatisseFragment.REQUEST_CODE_CAPTURE) {
+            fragment.capturedImage();
         }
     }
 
@@ -184,7 +194,13 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
     public void onUpdate() {
         MatisseFragment fragment = (MatisseFragment) getSupportFragmentManager().findFragmentById(R.id.main_content);
         List<Uri> list = fragment.getSelectedList();
-        list.get(0);
+        HashMap<Integer, String> mHashMap = fragment.getSelectedPathsWithPostions();
+    }
+
+    @Override
+    public void capture() {
+        MatisseFragment fragment = (MatisseFragment) getSupportFragmentManager().findFragmentById(R.id.main_content);
+        fragment.capture();
     }
 
     private static class UriAdapter extends RecyclerView.Adapter<UriAdapter.UriViewHolder> {

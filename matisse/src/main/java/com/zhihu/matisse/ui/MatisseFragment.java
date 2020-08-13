@@ -6,15 +6,18 @@ import android.database.Cursor;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +28,7 @@ import android.widget.TextView;
 import com.zhihu.matisse.MimeType;
 import com.zhihu.matisse.R;
 import com.zhihu.matisse.internal.entity.Album;
+import com.zhihu.matisse.internal.entity.CaptureStrategy;
 import com.zhihu.matisse.internal.entity.Item;
 import com.zhihu.matisse.internal.entity.SelectionSpec;
 import com.zhihu.matisse.internal.model.AlbumCollection;
@@ -39,10 +43,13 @@ import com.zhihu.matisse.internal.ui.widget.AlbumsSpinner;
 import com.zhihu.matisse.internal.ui.widget.CheckRadioView;
 import com.zhihu.matisse.internal.ui.widget.IncapableDialog;
 import com.zhihu.matisse.internal.utils.MediaStoreCompat;
+import com.zhihu.matisse.internal.utils.PathUtils;
 import com.zhihu.matisse.internal.utils.PhotoMetadataUtils;
+import com.zhihu.matisse.internal.utils.SingleMediaScanner;
 import com.zhihu.matisse.listener.OnSelectedListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
@@ -54,14 +61,13 @@ import static android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
  *
  */
 public class MatisseFragment extends Fragment implements
-        AlbumCollection.AlbumCallbacks, AdapterView.OnItemSelectedListener, View.OnClickListener, AlbumMediaAdapter.OnMediaClickListener,
-        AlbumMediaAdapter.OnPhotoCapture {
+        AlbumCollection.AlbumCallbacks, AdapterView.OnItemSelectedListener, View.OnClickListener, AlbumMediaAdapter.OnMediaClickListener {
 
     public static final String EXTRA_RESULT_SELECTION = "extra_result_selection";
     public static final String EXTRA_RESULT_SELECTION_PATH = "extra_result_selection_path";
     public static final String EXTRA_RESULT_ORIGINAL_ENABLE = "extra_result_original_enable";
     private static final int REQUEST_CODE_PREVIEW = 23;
-    private static final int REQUEST_CODE_CAPTURE = 24;
+    public static final int REQUEST_CODE_CAPTURE = 24;
     private static final String IMAGE_COUNT = "IMAGE_COUNT";
     private static final String MIME_TYPE = "MIME_TYPE";
     public static final String IMAGE_TYPE = "IMAGE_TYPE";
@@ -70,6 +76,11 @@ public class MatisseFragment extends Fragment implements
     public static final String NIGHT_THEME = "NIGHT_THEME";
     public static final String LIGHT_THEME = "LIGHT_THEME";
     public static final String THEME = "LIGHT_THEME";
+    public static final String TOTAL_COUNT = "TOTAL_COUNT";
+    public static final String SHOW_CAMERA = "SHOW_CAMERA";
+    public static final String IS_PUBLIC = "IS_PUBLIC";
+    public static final String AUTHORITY_NAME = "AUTHORITY_NAME";
+    public static final String DIRECTORY = "DIRECTORY";
 
     public static final String TAG = "MatisseFragment";
     public static final int RESULT_CANCELED    = 0;
@@ -92,6 +103,7 @@ public class MatisseFragment extends Fragment implements
     private CheckRadioView mOriginal;
     private boolean mOriginalEnable;
     private TextView requiredCountText;
+    public Fragment fragment;
     View view;
 
     /**
@@ -101,12 +113,29 @@ public class MatisseFragment extends Fragment implements
      * @return A new instance of fragment MatisseFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MatisseFragment newInstance(int count, String type, String theme) {
+    public static MatisseFragment newInstance(int count, int totalCount, String type, String theme) {
         MatisseFragment fragment = new MatisseFragment();
         Bundle bundle = new Bundle();
         bundle.putInt(IMAGE_COUNT, count);
         bundle.putString(MIME_TYPE, type);
         bundle.putString(THEME, theme);
+        bundle.putInt(TOTAL_COUNT, totalCount);
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
+    public static MatisseFragment newInstance(int count, int totalCount, String type, String theme, boolean showCamera, boolean isPublic, String authority, String directory) {
+        MatisseFragment fragment = new MatisseFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt(IMAGE_COUNT, count);
+        bundle.putString(MIME_TYPE, type);
+        bundle.putString(THEME, theme);
+        bundle.putInt(TOTAL_COUNT, totalCount);
+        bundle.putBoolean(SHOW_CAMERA, showCamera);
+        bundle.putBoolean(IS_PUBLIC, isPublic);
+        bundle.putString(AUTHORITY_NAME, authority);
+        bundle.putString(DIRECTORY, directory);
+
         fragment.setArguments(bundle);
         return fragment;
     }
@@ -122,7 +151,7 @@ public class MatisseFragment extends Fragment implements
         } else {
             mContainer.setVisibility(View.VISIBLE);
             mEmptyView.setVisibility(View.GONE);
-            Fragment fragment = MediaSelectionFragment.newInstance(album);
+            fragment = MediaSelectionFragment.newInstance(album);
             getFragmentManager()
                     .beginTransaction()
                     .replace(R.id.container, fragment, MediaSelectionFragment.class.getSimpleName())
@@ -138,6 +167,10 @@ public class MatisseFragment extends Fragment implements
         mSpec.mediaTypeExclusive = false;
         if (getArguments() != null) {
             mSpec.maxSelectable = getArguments().getInt(IMAGE_COUNT);
+            mSpec.capture = getArguments().getBoolean(SHOW_CAMERA, false);
+            if (mSpec.capture) {
+                mSpec.captureStrategy = new CaptureStrategy(getArguments().getBoolean(IS_PUBLIC, false ), getArguments().getString(AUTHORITY_NAME), getArguments().getString(DIRECTORY));
+            }
             String mimType = getArguments().getString(MIME_TYPE);
             String theme = getArguments().getString(THEME);
             // select mimType
@@ -157,7 +190,7 @@ public class MatisseFragment extends Fragment implements
             }
         }
         mSpec.orientation = SCREEN_ORIENTATION_UNSPECIFIED;
-        mSpec.countable = true;
+        mSpec.countable = false;
         mSpec = SelectionSpec.getInstance();
         getActivity().setTheme(mSpec.themeId);
         getActivity().setTheme(mSpec.themeId);
@@ -169,7 +202,7 @@ public class MatisseFragment extends Fragment implements
                              Bundle savedInstanceState) {
        view =  inflater.inflate(R.layout.fragment_matisse, container, false);
         requiredCountText = view.findViewById(R.id.album_media_required_count);
-        requiredCountText.setText("Select " +  mSpec.maxSelectable + " Images");
+        requiredCountText.setText("Select " +  getArguments().getInt(TOTAL_COUNT) + " Images");
         if (!mSpec.hasInited) {
             getActivity().setResult(RESULT_CANCELED);
             getActivity().finish();
@@ -411,7 +444,6 @@ public class MatisseFragment extends Fragment implements
         startActivityForResult(intent, REQUEST_CODE_PREVIEW);
     }
 
-    @Override
     public void capture() {
         if (mMediaStoreCompat != null) {
             mMediaStoreCompat.dispatchCaptureIntent(getActivity(), REQUEST_CODE_CAPTURE);
@@ -430,5 +462,35 @@ public class MatisseFragment extends Fragment implements
     public List<String> getSelectedPaths() {
         ArrayList<String> selectedPaths = (ArrayList<String>) mSelectedCollection.asListOfString();
         return selectedPaths;
+    }
+
+    public HashMap<Integer, String> getSelectedPathsWithPostions() {
+        HashMap<Integer, String> mHashMap = mSelectedCollection.asHashMap();
+        return mHashMap;
+    }
+
+    public void unSelectItem(String value) {
+        HashMap<Integer, String> mHashMap = mSelectedCollection.asHashMap();
+        if (mHashMap != null && mHashMap.size() > 0) {
+            for (int o : mHashMap.keySet()) {
+                if (mHashMap.get(o).equals(value)) {
+                   delete(o);
+                }
+            }
+        }
+    }
+
+    private void delete(int position) {
+        for (int i = 0; i < mSelectedCollection.getmItems().size(); i++) {
+            if (mSelectedCollection.getmItems().get(i).viewHolderPosition == position) {
+                RecyclerView.ViewHolder viewHolderForAdapterPosition = ((MediaSelectionFragment) fragment).mRecyclerView.findViewHolderForAdapterPosition(position);
+                ((MediaSelectionFragment) fragment).unSelect(mSelectedCollection.getmItems().get(i), viewHolderForAdapterPosition);
+                break;
+            }
+        }
+    }
+
+    public String capturedImage() {
+        return mMediaStoreCompat.getCurrentPhotoPath();
     }
 }

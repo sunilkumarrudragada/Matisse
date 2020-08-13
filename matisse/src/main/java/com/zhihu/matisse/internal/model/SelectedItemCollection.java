@@ -29,6 +29,7 @@ import com.zhihu.matisse.internal.utils.PathUtils;
 import com.zhihu.matisse.internal.utils.PhotoMetadataUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -148,6 +149,20 @@ public class SelectedItemCollection {
             uris.add(item.getContentUri());
         }
         return uris;
+    }
+
+    public HashMap<Integer, String> asHashMap() {
+        HashMap<Integer, String> mHashMap = new HashMap<>();
+        for (Item item : mItems) {
+            mHashMap.put(item.viewHolderPosition, PathUtils.getPath(mContext, item.getContentUri()));
+        }
+        return mHashMap;
+    }
+
+    public List<Item> getmItems() {
+        List<Item> list = new ArrayList<>();
+        list.addAll(mItems);
+        return list;
     }
 
     public List<String> asListOfString() {

@@ -43,7 +43,7 @@ public class MediaSelectionFragment extends Fragment implements
     public static final String EXTRA_ALBUM = "extra_album";
 
     private final AlbumMediaCollection mAlbumMediaCollection = new AlbumMediaCollection();
-    private RecyclerView mRecyclerView;
+    public RecyclerView mRecyclerView;
     private AlbumMediaAdapter mAdapter;
     private SelectionProvider mSelectionProvider;
     private AlbumMediaAdapter.CheckStateListener mCheckStateListener;
@@ -155,5 +155,9 @@ public class MediaSelectionFragment extends Fragment implements
 
     public interface SelectionProvider {
         SelectedItemCollection provideSelectedItemCollection();
+    }
+
+    public void unSelect(Item item, RecyclerView.ViewHolder holder) {
+        mAdapter.updateSelectedItem(item, holder);
     }
 }

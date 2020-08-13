@@ -173,11 +173,12 @@ public class AlbumMediaAdapter extends
         updateSelectedItem(item, holder);
     }
 
-    private void updateSelectedItem(Item item, RecyclerView.ViewHolder holder) {
+    public void updateSelectedItem(Item item, RecyclerView.ViewHolder holder) {
         if (mSelectionSpec.countable) {
             int checkedNum = mSelectedCollection.checkedNumOf(item);
             if (checkedNum == CheckView.UNCHECKED) {
                 if (assertAddSelection(holder.itemView.getContext(), item)) {
+                    item.viewHolderPosition = holder.getAdapterPosition();
                     mSelectedCollection.add(item);
                     notifyCheckStateChanged();
                 }
@@ -191,6 +192,7 @@ public class AlbumMediaAdapter extends
                 notifyCheckStateChanged();
             } else {
                 if (assertAddSelection(holder.itemView.getContext(), item)) {
+                    item.viewHolderPosition = holder.getAdapterPosition();
                     mSelectedCollection.add(item);
                     notifyCheckStateChanged();
                 }
