@@ -18,6 +18,8 @@ package com.zhihu.matisse.internal.ui.widget;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.provider.ContactsContract;
 import android.text.format.DateUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -35,6 +37,7 @@ public class MediaGrid extends SquareFrameLayout implements View.OnClickListener
     private CheckView mCheckView;
     private ImageView mGifTag;
     private TextView mVideoDuration;
+    private ImageView mVideoIdentifier;
 
     private Item mMedia;
     private PreBindInfo mPreBindInfo;
@@ -57,6 +60,7 @@ public class MediaGrid extends SquareFrameLayout implements View.OnClickListener
         mCheckView = (CheckView) findViewById(R.id.check_view);
         mGifTag = (ImageView) findViewById(R.id.gif);
         mVideoDuration = (TextView) findViewById(R.id.video_duration);
+        mVideoIdentifier = (ImageView) findViewById(R.id.video_identifier);
 
         mThumbnail.setOnClickListener(this);
         mCheckView.setOnClickListener(this);
@@ -122,9 +126,11 @@ public class MediaGrid extends SquareFrameLayout implements View.OnClickListener
     private void setVideoDuration() {
         if (mMedia.isVideo()) {
             mVideoDuration.setVisibility(VISIBLE);
+            mVideoIdentifier.setVisibility(VISIBLE);
             mVideoDuration.setText(DateUtils.formatElapsedTime(mMedia.duration / 1000));
         } else {
             mVideoDuration.setVisibility(GONE);
+            mVideoIdentifier.setVisibility(GONE);
         }
     }
 
