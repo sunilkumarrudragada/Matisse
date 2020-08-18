@@ -126,11 +126,11 @@ public class MediaGrid extends SquareFrameLayout implements View.OnClickListener
     private void setVideoDuration() {
         if (mMedia.isVideo()) {
             mVideoDuration.setVisibility(VISIBLE);
-            mVideoIdentifier.setVisibility(VISIBLE);
+            mVideoIdentifier.setImageResource(R.drawable.video_identifier);
             mVideoDuration.setText(DateUtils.formatElapsedTime(mMedia.duration / 1000));
         } else {
             mVideoDuration.setVisibility(GONE);
-            mVideoIdentifier.setVisibility(GONE);
+            mVideoIdentifier.setImageResource(R.drawable.ic_photo_camera_white_24dp);
         }
     }
 

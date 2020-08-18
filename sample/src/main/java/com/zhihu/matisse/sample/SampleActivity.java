@@ -19,6 +19,8 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,7 +30,6 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -46,7 +47,6 @@ import com.zhihu.matisse.internal.entity.CaptureStrategy;
 import com.zhihu.matisse.internal.model.SelectedItemCollection;
 import com.zhihu.matisse.internal.ui.MediaSelectionFragment;
 import com.zhihu.matisse.internal.ui.adapter.AlbumMediaAdapter;
-import com.zhihu.matisse.listener.OnSelectedListener;
 import com.zhihu.matisse.ui.MatisseFragment;
 
 import java.util.HashMap;
@@ -72,7 +72,7 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(mAdapter = new UriAdapter());
 
-        fragment1 = MatisseFragment.newInstance(5, 5, MatisseFragment.IMAGE_TYPE, MatisseFragment.LIGHT_THEME, true, true, "com.zhihu.matisse.sample.fileprovider", "test");
+        fragment1 = MatisseFragment.newInstance(Integer.MAX_VALUE, MatisseFragment.IMAGE_VIDEO, MatisseFragment.LIGHT_THEME, true, true, "com.zhihu.matisse.sample.fileprovider", "test");
 //
         loadFragment(fragment1);
     }
@@ -107,7 +107,7 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
         switch (v.getId()) {
             case R.id.zhihu:
                 Matisse.from(SampleActivity.this)
-                        .choose(MimeType.ofImage(), false)
+                        .choose(MimeType.ofVideo(), false)
                         .countable(true)
                         .capture(true)
                         .showPreview(false)
@@ -197,6 +197,8 @@ public class SampleActivity extends AppCompatActivity implements View.OnClickLis
     public void onUpdate() {
         MatisseFragment fragment = (MatisseFragment) getSupportFragmentManager().findFragmentById(R.id.main_content);
         List<Uri> list = fragment.getSelectedList();
+        List<String> path = fragment.getSelectedPaths();
+        Bitmap bitmap = BitmapFactory.decodeFile(path.get(0));
         HashMap<Integer, String> mHashMap = fragment.getSelectedPathsWithPostions();
     }
 

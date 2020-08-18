@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 
 import androidx.appcompat.app.ActionBar;
@@ -17,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,10 +41,7 @@ import com.zhihu.matisse.internal.ui.widget.AlbumsSpinner;
 import com.zhihu.matisse.internal.ui.widget.CheckRadioView;
 import com.zhihu.matisse.internal.ui.widget.IncapableDialog;
 import com.zhihu.matisse.internal.utils.MediaStoreCompat;
-import com.zhihu.matisse.internal.utils.PathUtils;
 import com.zhihu.matisse.internal.utils.PhotoMetadataUtils;
-import com.zhihu.matisse.internal.utils.SingleMediaScanner;
-import com.zhihu.matisse.listener.OnSelectedListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -113,24 +108,22 @@ public class MatisseFragment extends Fragment implements
      * @return A new instance of fragment MatisseFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MatisseFragment newInstance(int count, int totalCount, String type, String theme) {
+    public static MatisseFragment newInstance(int count, String type, String theme) {
         MatisseFragment fragment = new MatisseFragment();
         Bundle bundle = new Bundle();
         bundle.putInt(IMAGE_COUNT, count);
         bundle.putString(MIME_TYPE, type);
         bundle.putString(THEME, theme);
-        bundle.putInt(TOTAL_COUNT, totalCount);
         fragment.setArguments(bundle);
         return fragment;
     }
 
-    public static MatisseFragment newInstance(int count, int totalCount, String type, String theme, boolean showCamera, boolean isPublic, String authority, String directory) {
+    public static MatisseFragment newInstance(int count, String type, String theme, boolean showCamera, boolean isPublic, String authority, String directory) {
         MatisseFragment fragment = new MatisseFragment();
         Bundle bundle = new Bundle();
         bundle.putInt(IMAGE_COUNT, count);
         bundle.putString(MIME_TYPE, type);
         bundle.putString(THEME, theme);
-        bundle.putInt(TOTAL_COUNT, totalCount);
         bundle.putBoolean(SHOW_CAMERA, showCamera);
         bundle.putBoolean(IS_PUBLIC, isPublic);
         bundle.putString(AUTHORITY_NAME, authority);
@@ -202,7 +195,7 @@ public class MatisseFragment extends Fragment implements
                              Bundle savedInstanceState) {
        view =  inflater.inflate(R.layout.fragment_matisse, container, false);
         requiredCountText = view.findViewById(R.id.album_media_required_count);
-        requiredCountText.setText("Select " +  getArguments().getInt(TOTAL_COUNT) + " Images");
+        requiredCountText.setText("Select " +  getArguments().getInt(IMAGE_COUNT) + " Images");
         if (!mSpec.hasInited) {
             getActivity().setResult(RESULT_CANCELED);
             getActivity().finish();
